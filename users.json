@@ -1,0 +1,7 @@
+{
+  "admin": {
+    "password_hash": "scrypt:32768:8:1$SD313eqNBhlXPzL9$75ce1fdc27889dd3f91425fa2a8c268e665ff8cb9137761a905db76e1cb8210b698e5b12fb6c4e2a8d28901ce832bf2341e379719c7803f6b5275ce72d16c2c1",
+    "can_edit": true,
+    "is_admin": true
+  }
+}

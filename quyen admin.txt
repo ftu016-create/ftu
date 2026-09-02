@@ -1,0 +1,5 @@
+quyền tạo báo cáo
+user: admin
+pass:123456
+vào powershell tại thư mục có app.py chạy lenh python app.py
+sau đó mở powershell tại thư mục có app.pymới chạy & "C:\cloudflared\cloudflared.exe" tunnel --url http://127.0.0.1:5000/5001
