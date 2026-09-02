@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Lịch sử ATVSLĐ</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+
+        /* ==============================
+           KHUNG NỀN CHUNG
+           ============================== */
+
+        body {
+            margin: 0;
+            background: #eef2f6;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+
+        /* ==============================
+           THANH TIÊU ĐỀ PHÍA TRÊN
+           ============================== */
+
+        .topbar {
+            background: #1f426b;
+            color: white;
+
+            min-height: 88px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 28px;
+            box-sizing: border-box;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+        }
+
+
+        /* ==============================
+           CỤM NÚT BÊN PHẢI
+           ============================== */
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+
+        /* ==============================
+           NÚT
+           ============================== */
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            border: none;
+            border-radius: 6px;
+
+            padding: 10px 16px;
+
+            font-size: 16px;
+            font-weight: 600;
+
+            text-decoration: none;
+
+            cursor: pointer;
+
+            box-sizing: border-box;
+        }
+
+
+        .btn.primary {
+            background: #1976d2;
+            color: white;
+        }
+
+        .btn.primary:hover {
+            background: #1565c0;
+        }
+
+
+        .btn.secondary {
+            background: #555;
+            color: white;
+        }
+
+        .btn.secondary:hover {
+            background: #444;
+        }
+
+
+        .btn-login {
+            background: #1976d2;
+            color: white;
+
+            padding: 10px 18px;
+
+            border-radius: 6px;
+
+            text-decoration: none;
+
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .btn-login:hover {
+            background: #1565c0;
+        }
+
+
+        .btn-logout {
+            background: #555;
+            color: white;
+
+            padding: 10px 18px;
+
+            border-radius: 6px;
+
+            text-decoration: none;
+
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .btn-logout:hover {
+            background: #444;
+        }
+
+
+        /* ==============================
+           KHUNG CHÍNH
+           ============================== */
+
+        .container {
+            max-width: 1700px;
+            margin: 28px auto;
+            padding: 0 22px;
+            box-sizing: border-box;
+        }
+
+
+        /* ==============================
+           CARD
+           ============================== */
+
+        .card {
+            background: white;
+
+            border-radius: 12px;
+
+            padding: 30px;
+
+            box-shadow:
+                0 3px 14px rgba(0, 0, 0, 0.08);
+
+            box-sizing: border-box;
+        }
+
+
+        /* ==============================
+           TIÊU ĐỀ LỊCH SỬ
+           ============================== */
+
+        .history-title {
+            display: flex;
+            align-items: center;
+
+            gap: 14px;
+
+            margin-bottom: 28px;
+        }
+
+        .history-title .icon {
+            font-size: 38px;
+        }
+
+        .history-title h2 {
+            margin: 0;
+
+            font-size: 32px;
+
+            color: #111;
+
+            font-weight: 700;
+        }
+
+
+        /* ==============================
+           BẢNG LỊCH SỬ
+           ============================== */
+
+        .history-table {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .history-table table {
+            width: 100%;
+
+            border-collapse: collapse;
+
+            table-layout: auto;
+
+            font-size: 17px;
+        }
+
+
+        .history-table th {
+            background: #edf1f4;
+
+            color: #111;
+
+            font-weight: 700;
+
+            text-align: left;
+
+            padding: 14px 16px;
+
+            border: 1px solid #d2d7dc;
+
+            white-space: nowrap;
+        }
+
+
+        .history-table td {
+            padding: 13px 16px;
+
+            border: 1px solid #d2d7dc;
+
+            color: #111;
+
+            vertical-align: middle;
+        }
+
+
+        .history-table tbody tr:hover {
+            background: #f7f9fb;
+        }
+
+
+        /* ==============================
+           CỘT
+           ============================== */
+
+        .history-table th:nth-child(1),
+        .history-table td:nth-child(1) {
+            width: 120px;
+            white-space: nowrap;
+        }
+
+        .history-table th:nth-child(2),
+        .history-table td:nth-child(2) {
+            width: 145px;
+            white-space: nowrap;
+        }
+
+        .history-table th:nth-child(3),
+        .history-table td:nth-child(3) {
+            width: auto;
+        }
+
+        .history-table th:nth-child(4),
+        .history-table td:nth-child(4) {
+            width: 190px;
+            white-space: nowrap;
+        }
+
+        .history-table th:nth-child(5),
+        .history-table td:nth-child(5) {
+            width: 210px;
+            white-space: nowrap;
+        }
+
+
+        /* ==============================
+           TÊN BÁO CÁO
+           ============================== */
+
+        .report-name {
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+
+        /* ==============================
+           CỤM NÚT THAO TÁC
+           ============================== */
+
+        .action-buttons {
+            display: flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            white-space: nowrap;
+        }
+
+
+        .action-buttons form {
+            display: inline;
+            margin: 0;
+        }
+
+
+        .btn.small {
+            padding: 7px 12px;
+
+            font-size: 15px;
+
+            border-radius: 6px;
+
+            min-width: 52px;
+        }
+
+
+        .btn.open {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn.open:hover {
+            background: #2980b9;
+        }
+
+
+        .btn.word {
+            background: #217346;
+            color: white;
+        }
+
+        .btn.word:hover {
+            background: #1b5e38;
+        }
+
+
+        .btn.danger {
+            background: #d9534f;
+            color: white;
+
+            border: none;
+        }
+
+        .btn.danger:hover {
+            background: #c9302c;
+        }
+
+
+        /* ==============================
+           THÔNG BÁO
+           ============================== */
+
+        .flash {
+            margin-bottom: 20px;
+
+            padding: 12px 16px;
+
+            border-radius: 6px;
+
+            background: #fff3cd;
+
+            border: 1px solid #ffe69c;
+
+            color: #664d03;
+        }
+
+
+        /* ==============================
+           ĐIỆN THOẠI / MÀN HÌNH NHỎ
+           ============================== */
+
+        @media (max-width: 900px) {
+
+            .topbar {
+                flex-direction: column;
+
+                align-items: flex-start;
+
+                gap: 15px;
+
+                padding: 18px;
+            }
+
+            .top-actions {
+                width: 100%;
+            }
+
+            .card {
+                padding: 18px;
+            }
+
+            .history-title h2 {
+                font-size: 25px;
+            }
+
+            .history-table table {
+                font-size: 15px;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- ============================================================
+     THANH TIÊU ĐỀ
+     ============================================================ -->
+
+<header class="topbar">
+
+    <div>
+        <h1>BIÊN BẢN KIỂM TRA ATVSLĐ</h1>
+    </div>
+
+
+    <div class="top-actions">
+
+        <!-- CHỈ NGƯỜI CÓ QUYỀN SỬA MỚI THẤY -->
+
+        {% if current_user.is_authenticated and current_user.can_edit %}
+
+            <a
+                href="{{ url_for('create_report') }}"
+                class="btn primary"
+            >
+                + Tạo báo cáo mới
+            </a>
+
+
+            <a
+                href="{{ url_for('logout') }}"
+                class="btn-logout"
+            >
+                Đăng xuất
+            </a>
+
+        {% else %}
+
+            <!-- NGƯỜI CHƯA ĐĂNG NHẬP -->
+
+            <a
+                href="{{ url_for('login') }}"
+                class="btn-login"
+            >
+                Đăng nhập
+            </a>
+
+        {% endif %}
+
+    </div>
+
+</header>
+
+
+
+<!-- ============================================================
+     KHUNG CHÍNH
+     ============================================================ -->
+
+<main class="container">
+
+    <section class="card">
+
+
+        <!-- ========================================================
+             TIÊU ĐỀ
+             ======================================================== -->
+
+        <div class="history-title">
+
+            <div class="icon">
+                📚
+            </div>
+
+            <h2>
+                Báo cáo các tháng đã lưu
+            </h2>
+
+        </div>
+
+
+
+        <!-- ========================================================
+             THÔNG BÁO
+             ======================================================== -->
+
+        {% with messages = get_flashed_messages() %}
+
+            {% for m in messages %}
+
+                <div class="flash">
+                    {{ m }}
+                </div>
+
+            {% endfor %}
+
+        {% endwith %}
+
+
+
+        <!-- ========================================================
+             KHÔNG CÓ BÁO CÁO
+             ======================================================== -->
+
+        {% if not items %}
+
+            <p>
+                Chưa có báo cáo nào.
+            </p>
+
+
+        {% else %}
+
+
+        <!-- ========================================================
+             BẢNG LỊCH SỬ
+             ======================================================== -->
+
+        <div class="history-table">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Tháng
+                        </th>
+
+                        <th>
+                            Ngày kiểm tra
+                        </th>
+
+                        <th>
+                            Tên báo cáo
+                        </th>
+
+                        <th>
+                            Ngày lưu
+                        </th>
+
+                        <th>
+                            Thao tác
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                {% for x in items %}
+
+                    <tr>
+
+
+                        <!-- THÁNG -->
+
+                        <td>
+                            {{ x.thang_nam }}
+                        </td>
+
+
+                        <!-- NGÀY KIỂM TRA -->
+
+                        <td>
+                            {{ x.ngay }}
+                        </td>
+
+
+                        <!-- TÊN BÁO CÁO -->
+
+                        <td class="report-name">
+
+                            Biên bản kiểm tra ATVSLĐ
+                            tháng {{ x.thang_nam }}
+
+                        </td>
+
+
+                        <!-- NGÀY LƯU -->
+
+                        <td>
+                            {{ x.updated_at }}
+                        </td>
+
+
+                        <!-- THAO TÁC -->
+
+                        <td>
+
+                            <div class="action-buttons">
+
+
+                                <!-- =========================
+                                     NÚT MỞ
+                                     ========================= -->
+
+                                {% if current_user.is_authenticated
+                                      and current_user.can_edit %}
+
+                                    <a
+                                        href="{{ url_for('edit_report', rid=x.id) }}"
+                                        class="btn open small"
+                                    >
+                                        Mở
+                                    </a>
+
+                                {% endif %}
+
+
+
+                                <!-- =========================
+                                     NÚT WORD
+                                     AI CŨNG ĐƯỢC DÙNG
+                                     ========================= -->
+
+                                <a
+                                    href="{{ url_for('open_word', rid=x.id) }}"
+                                    class="btn word small"
+                                >
+                                    Word
+                                </a>
+
+
+
+                                <!-- =========================
+                                     NÚT XÓA
+                                     CHỈ NGƯỜI CÓ QUYỀN
+                                     ========================= -->
+
+                                {% if current_user.is_authenticated
+                                      and current_user.can_edit %}
+
+                                    <form
+                                        method="post"
+                                        action="{{ url_for('delete_report', rid=x.id) }}"
+                                        onsubmit="return confirm('Xóa báo cáo này?')"
+                                    >
+
+                                        <button
+                                            type="submit"
+                                            class="btn danger small"
+                                        >
+                                            Xóa
+                                        </button>
+
+                                    </form>
+
+                                {% endif %}
+
+
+                            </div>
+
+                        </td>
+
+
+                    </tr>
+
+                {% endfor %}
+
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+</main>
+
+
+</body>
+
+</html>

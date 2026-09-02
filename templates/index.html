@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tạo biên bản ATVSLĐ</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div><h1>BIÊN BẢN KIỂM TRA ATVSLĐ</h1></div>
+  <div class="top-actions"><a href="{{ url_for('history') }}" class="btn secondary">📚 Lịch sử</a><button class="btn primary" type="submit" form="reportForm">💾 LƯU VÀ TẠO BÁO CÁO WORD</button></div>
+</header>
+
+<form id="reportForm" method="post" enctype="multipart/form-data"
+      action="{{ url_for('update_report',rid=edit_id) if edit_id else url_for('create_report') }}">
+<main class="container">
+<section class="card">
+<h2>1. Thông tin biên bản</h2>
+<div class="grid">
+<label>Tháng/năm<input name="thang_nam" value="{{ data.thang_nam }}"></label>
+<label>Ngày lập biên bản<input name="ngay" value="{{ data.ngay }}"></label>
+<label>Số văn bản<input name="so_van_ban" value="{{ data.so_van_ban }}"></label>
+<label>Giờ bắt đầu<input name="gio_bd" value="{{ data.gio_bd }}"></label>
+<label>Giờ kết thúc<input name="gio_kt" value="{{ data.gio_kt }}"></label>
+<label>Ngày bắt đầu<input name="ngay_bd" value="{{ data.ngay_bd }}"></label>
+<label>Ngày kết thúc<input name="ngay_kt" value="{{ data.ngay_kt }}"></label>
+</div>
+</section>
+
+<section class="card">
+<h2>2. Thành phần đoàn kiểm tra</h2>
+<div id="members">
+{% for m in data.members %}
+<div class="member-row">
+  <span class="number">{{ loop.index }}</span>
+  <input name="member_name" value="{{ m[0] }}" placeholder="Họ và tên">
+  <input name="member_role" value="{{ m[1] }}" placeholder="Chức vụ / nhiệm vụ">
+  <button type="button" class="btn danger small" onclick="removeAndRenumber(this.closest('.member-row'))">Xóa</button>
+</div>
+{% endfor %}
+</div>
+<div class="member-actions">
+  <button type="button" class="btn secondary" onclick="addMember()">
+    + Thêm thành viên
+  </button>
+
+  <button type="button" class="btn secondary" onclick="addSignature()">
+    ✍️ Chèn chữ ký
+  </button>
+</div>
+</section>
+
+<section class="card">
+<h2>3. Nội dung và kết quả kiểm tra</h2>
+<p class="hint">STT cấp mục <b>1, 2, 3...</b> và tiêu đề mục được giữ riêng. STT dòng con <b>1.1, 1.2...</b> tự chạy lại khi thêm/xóa.</p>
+<div id="groups">
+{% for g in data.groups %}
+{% set gi=loop.index0 %}
+<div class="group" data-group="{{ gi }}">
+<input type="hidden" name="group_stt" value="{{ g.stt }}">
+<div class="group-head">
+  <span class="group-stt">{{ g.stt }}</span>
+  <input name="group_title" value="{{ g.title }}">
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th class="stt">STT</th><th>Nội dung kiểm tra</th><th>Kết quả kiểm tra</th><th>Tồn tại/kiến nghị cần xử lý</th><th>Ghi chú</th><th class="action">Xóa</th></tr></thead>
+<tbody>
+{% for r in g.rows %}
+<tr>
+<td><input name="g{{ gi }}_idx" value="{{ r[0] }}" readonly></td>
+<td><textarea name="g{{ gi }}_content">{{ r[1] }}</textarea></td>
+<td><textarea name="g{{ gi }}_result">{{ r[2] }}</textarea></td>
+<td><textarea name="g{{ gi }}_recommendation">{{ r[3] }}</textarea></td>
+<td><textarea name="g{{ gi }}_note">{{ r[4] }}</textarea></td>
+<td><button type="button" class="btn danger small" onclick="removeInspectionRow(this)">Xóa</button></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+<button type="button" class="btn add" onclick="addInspectionRow(this)">+ Thêm dòng cho mục {{ g.stt }}</button>
+</div>
+{% endfor %}
+</div>
+</section>
+
+<section class="card">
+<h2>4. Kiến nghị Đoàn kiểm tra</h2>
+<div id="recommendations">
+{% for r in data.recommendations %}
+<div class="rec-row"><span class="number">{{ loop.index }}</span><textarea name="recommendation">{{ r }}</textarea><button type="button" class="btn danger small" onclick="removeRecommendation(this)">Xóa</button></div>
+{% endfor %}
+</div>
+<button type="button" class="btn secondary" onclick="addRecommendation()">+ Thêm kiến nghị</button>
+</section>
+
+<section class="card">
+<h2>5. Phụ lục: Các hình ảnh kiểm tra thực tế</h2>
+<p class="hint">Mỗi dòng gồm ST và MR song song. STT tự chạy lại. Hỗ trợ JPG/JPEG/PNG/WebP/GIF/HEIC/HEIF. File HEIC được chuyển tạm sang JPEG để xem trước và gửi Word.</p>
+<div id="images">
+{% for i in range(1,7) %}
+<div class="image-row" data-stt="{{ i }}">
+  <div class="image-stt">{{ i }}</div>
+  <div class="image-box"><b>NMTĐ Ialy</b><input type="hidden" name="image_stt" value="{{ i }}"><input type="hidden" name="image_side" value="ST"><input name="image_caption" placeholder="Chú thích hình ST"><input type="file" name="image_file" accept="image/*,.heic,.heif" onchange="previewImage(this)"><div class="preview">Chưa chọn hình</div></div>
+  <div class="image-stt">{{ i }}</div>
+  <div class="image-box"><b>NMTĐ Ialy MR</b><input type="hidden" name="image_stt" value="{{ i }}"><input type="hidden" name="image_side" value="MR"><input name="image_caption" placeholder="Chú thích hình MR"><input type="file" name="image_file" accept="image/*,.heic,.heif" onchange="previewImage(this)"><div class="preview">Chưa chọn hình</div></div>
+  <button type="button" class="btn danger small" onclick="removeImageRow(this)">Xóa</button>
+</div>
+{% endfor %}
+</div>
+<button type="button" class="btn add" onclick="addImageRow()">+ Thêm dòng hình ảnh</button>
+</section>
+
+<div class="bottom-actions"><button class="btn primary big" type="submit">💾 {{ 'LƯU VÀ CẬP NHẬT BÁO CÁO WORD' if edit_id else 'LƯU VÀ TẠO BÁO CÁO WORD' }}</button></div>
+</main>
+</form>
+
+<script>
+function renumberMembers(){document.querySelectorAll('#members .member-row').forEach((r,i)=>r.querySelector('.number').textContent=i+1)}
+function addMember(){const box=document.getElementById('members');const r=document.createElement('div');r.className='member-row';r.innerHTML='<span class="number"></span><input name="member_name" placeholder="Họ và tên"><input name="member_role" placeholder="Chức vụ / nhiệm vụ"><button type="button" class="btn danger small" onclick="removeAndRenumber(this.closest(\'.member-row\'))">Xóa</button>';box.appendChild(r);renumberMembers()}
+function removeAndRenumber(r){r.remove();renumberMembers()}
+function renumberInspection(group){const tbody=group.querySelector('tbody');const stt=group.querySelector('input[name="group_stt"]').value;tbody.querySelectorAll('tr').forEach((r,i)=>r.querySelector('input[name$="_idx"]').value=stt+'.'+(i+1))}
+function addInspectionRow(btn){const group=btn.closest('.group');const tbody=group.querySelector('tbody');const gi=group.dataset.group;const tr=document.createElement('tr');tr.innerHTML=`<td><input name="g${gi}_idx" readonly></td><td><textarea name="g${gi}_content"></textarea></td><td><textarea name="g${gi}_result"></textarea></td><td><textarea name="g${gi}_recommendation"></textarea></td><td><textarea name="g${gi}_note"></textarea></td><td><button type="button" class="btn danger small" onclick="removeInspectionRow(this)">Xóa</button></td>`;tbody.appendChild(tr);renumberInspection(group)}
+function removeInspectionRow(btn){const group=btn.closest('.group');const tbody=group.querySelector('tbody');if(tbody.children.length<=1){alert('Mỗi mục phải giữ ít nhất 1 dòng.');return}btn.closest('tr').remove();renumberInspection(group)}
+function renumberRecommendations(){document.querySelectorAll('#recommendations .rec-row').forEach((r,i)=>r.querySelector('.number').textContent=i+1)}
+function addRecommendation(){const box=document.getElementById('recommendations');const r=document.createElement('div');r.className='rec-row';r.innerHTML='<span class="number"></span><textarea name="recommendation" placeholder="Nội dung kiến nghị"></textarea><button type="button" class="btn danger small" onclick="removeRecommendation(this)">Xóa</button>';box.appendChild(r);renumberRecommendations()}
+function removeRecommendation(btn){btn.closest('.rec-row').remove();renumberRecommendations()}
+function renumberImages(){document.querySelectorAll('#images .image-row').forEach((r,i)=>{const n=i+1;r.dataset.stt=n;r.querySelectorAll('.image-stt').forEach(x=>x.textContent=n);r.querySelectorAll('input[name="image_stt"]').forEach(x=>x.value=n)})}
+function addImageRow(){const box=document.getElementById('images');const r=document.createElement('div');r.className='image-row';r.innerHTML='<div class="image-stt"></div><div class="image-box"><b>NMTĐ Ialy</b><input type="hidden" name="image_stt"><input type="hidden" name="image_side" value="ST"><input name="image_caption" placeholder="Chú thích hình ST"><input type="file" name="image_file" accept="image/*,.heic,.heif" onchange="previewImage(this)"><div class="preview">Chưa chọn hình</div></div><div class="image-stt"></div><div class="image-box"><b>NMTĐ Ialy MR</b><input type="hidden" name="image_stt"><input type="hidden" name="image_side" value="MR"><input name="image_caption" placeholder="Chú thích hình MR"><input type="file" name="image_file" accept="image/*,.heic,.heif" onchange="previewImage(this)"><div class="preview">Chưa chọn hình</div></div><button type="button" class="btn danger small" onclick="removeImageRow(this)">Xóa</button>';box.appendChild(r);renumberImages()}
+function removeImageRow(btn){const rows=document.querySelectorAll('#images .image-row');if(rows.length<=1){alert('Phải giữ ít nhất 1 dòng hình ảnh.');return}btn.closest('.image-row').remove();renumberImages()}
+async function previewImage(input){const p=input.parentElement.querySelector('.preview');p.innerHTML='';const f=input.files&&input.files[0];if(!f){p.textContent='Chưa chọn hình';return}const ext=f.name.split('.').pop().toLowerCase();const heic=['heic','heif'].includes(ext)||['image/heic','image/heif'].includes(f.type);if(!heic){const img=document.createElement('img');img.src=URL.createObjectURL(f);p.appendChild(img);return}try{p.textContent='Đang chuyển HEIC...';const result=await heic2any({blob:f,toType:'image/jpeg',quality:.9});const blob=Array.isArray(result)?result[0]:result;const img=document.createElement('img');img.src=URL.createObjectURL(blob);p.innerHTML='';p.appendChild(img)}catch(e){p.textContent='Không đọc được HEIC. Máy cần Internet để tải bộ chuyển HEIC.'}}
+['#groups .group'].forEach?.
+
+document.querySelectorAll('.group').forEach(renumberInspection);renumberMembers();renumberRecommendations();renumberImages();
+</script>
+</body></html>

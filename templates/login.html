@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Đăng nhập - ATVSLĐ</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .login-box {
+            max-width: 420px;
+            margin: 80px auto;
+        }
+
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .login-box label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .login-box input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 11px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        .login-box button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 11px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .login-back {
+            text-align: center;
+            margin-top: 18px;
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="container">
+
+    <section class="card login-box">
+
+        <h2>ĐĂNG NHẬP QUẢN TRỊ</h2>
+
+        {% with messages = get_flashed_messages() %}
+            {% for m in messages %}
+                <div class="flash">
+                    {{ m }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="post">
+
+            <label>Tên đăng nhập</label>
+
+            <input
+                type="text"
+                name="username"
+                autocomplete="username"
+                required
+            >
+
+            <label>Mật khẩu</label>
+
+            <input
+                type="password"
+                name="password"
+                autocomplete="current-password"
+                required
+            >
+
+            <button
+                type="submit"
+                class="btn primary"
+            >
+                Đăng nhập
+            </button>
+
+        </form>
+
+        <div class="login-back">
+
+            <a href="{{ url_for('history') }}">
+                ← Quay lại lịch sử báo cáo
+            </a>
+
+        </div>
+
+    </section>
+
+</main>
+
+</body>
+</html>
